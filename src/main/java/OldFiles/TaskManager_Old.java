@@ -1,18 +1,21 @@
+package OldFiles;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.Scanner;
 
-public class TaskManager {
+public class TaskManager_Old {
 
     private String nameOfTask;
     private String descriptionOfTask;
 
     Scanner scanner = new Scanner(System.in);
-    private final HashMap<Integer, Task> mapOfTask = new HashMap<>();
+    private final Map<Integer, Task> mapOfTask = new HashMap<>();
 
     private int countOfTask = 0;
 
@@ -56,16 +59,19 @@ public class TaskManager {
 
     //Редактировать задачу: изменить название, описание, срок выполнения, статус
     public void edit() {
-        int id;
         System.out.println("Введите ID задачи, которую хотите изменить: ");
-        id = scanner.nextInt();
+//        int id = scanner.nextInt();
+        String idInput = scanner.nextLine();
+        int id = Integer.parseInt(idInput);
+
 
         while (mapOfTask.get(id) == null) {
             System.out.println("Такой задачи не существует, попробуйте ещё раз.");
-            id = scanner.nextInt();
+            idInput = scanner.nextLine();
+            id = Integer.parseInt(idInput);
         }
-        //"Проглатываем" Enter после nextInt()
-        scanner.nextLine();
+//        "Проглатываем" Enter после nextInt()
+//        scanner.nextLine();
         System.out.println("Введите изменение в том поле, которое хотите изменить. Поля оставленные пустыми, меняться не будут");
 
         System.out.println("Текущее название задачи: " + mapOfTask.get(id).getNameOfTask() + ". Новое название: ");
@@ -155,8 +161,8 @@ public class TaskManager {
 
     public void delete() {
         System.out.println("Введите ID задачи, которую хотите удалить: ");
-        int id = scanner.nextInt();
-        scanner.nextLine();
+        String idInput = scanner.nextLine();
+        int id = Integer.parseInt(idInput);
 
         if (mapOfTask.containsKey(id)) {
             mapOfTask.remove(id);
