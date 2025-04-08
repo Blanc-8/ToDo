@@ -1,5 +1,12 @@
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDate;
-import java.util.Objects;
+
+@Getter
+@Setter
+@EqualsAndHashCode
 
 public class Task {
     private String nameOfTask;
@@ -12,51 +19,6 @@ public class Task {
         this.descriptionOfTask = descriptionOfTask;
         this.dateDeadLine = dateDeadLine;
         this.status = TaskStatus.TODO;
-    }
-
-    public String getNameOfTask() {
-        return nameOfTask;
-    }
-
-    public void setNameOfTask(String nameOfTask) {
-        this.nameOfTask = nameOfTask;
-    }
-
-    public String getDescriptionOfTask() {
-        return descriptionOfTask;
-    }
-
-    public void setDescriptionOfTask(String descriptionOfTask) {
-        this.descriptionOfTask = descriptionOfTask;
-    }
-
-    public LocalDate getDateDeadLine() {
-        return dateDeadLine;
-    }
-
-    public void setDateDeadLine(LocalDate dateDeadLine) {
-        this.dateDeadLine = dateDeadLine;
-    }
-
-    public TaskStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TaskStatus status) {
-        this.status = status;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Task task = (Task) o;
-        return Objects.equals(nameOfTask, task.nameOfTask) && Objects.equals(descriptionOfTask, task.descriptionOfTask) && Objects.equals(dateDeadLine, task.dateDeadLine) && status == task.status;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(nameOfTask, descriptionOfTask, dateDeadLine, status);
     }
 
     @Override

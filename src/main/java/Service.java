@@ -1,11 +1,9 @@
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.Map;
 
 public class Service {
 
     Repository repository = new Repository();
-    private int countOfTask = 0;
 
     // Демо данные для ручного тестирования
     public Service() {
@@ -17,88 +15,77 @@ public class Service {
         addTask("Протестировать UI", "Проверка отображения задач в списке", LocalDate.of(2025, 4, 12));
         addTask("Сделать бэкап", "Создать резервную копию проекта", LocalDate.of(2025, 4, 9));
 
-        newStatusOfTask(TaskStatus.IN_PROGRESS, 1);
-        newStatusOfTask(TaskStatus.TODO, 2);
-        newStatusOfTask(TaskStatus.DONE, 3);
-        newStatusOfTask(TaskStatus.IN_PROGRESS, 4);
-        newStatusOfTask(TaskStatus.TODO, 5);
-        newStatusOfTask(TaskStatus.DONE, 6);
-        newStatusOfTask(TaskStatus.DONE, 7);
+        updateTaskStatus(TaskStatus.IN_PROGRESS, 1);
+        updateTaskStatus(TaskStatus.TODO, 2);
+        updateTaskStatus(TaskStatus.DONE, 3);
+        updateTaskStatus(TaskStatus.IN_PROGRESS, 4);
+        updateTaskStatus(TaskStatus.TODO, 5);
+        updateTaskStatus(TaskStatus.DONE, 6);
+        updateTaskStatus(TaskStatus.DONE, 7);
     }
-
-
 
     public void addTask(String nameOfTask, String descriptionOfTask, LocalDate dateOfDeadLine) {
-        Task task = new Task(nameOfTask, descriptionOfTask, dateOfDeadLine);
-        countOfTask++;
-        repository.getMapOfTask().put(countOfTask, task);
+                repository.addTaskInMemory(nameOfTask, descriptionOfTask, dateOfDeadLine);
     }
 
-    public boolean filterTaskByStatus (TaskStatus status) {
-        return repository.getMapOfTask().values().stream()
-                .filter(task -> task.getStatus() == status)
-                .peek(System.out::println)
-                .count() > 0;
+    public boolean filterTasksByStatus(TaskStatus status) {
+        return repository.filterTasksByStatusAtRepository(status);
     }
 
-    public void sortByStatus() {
-        repository.getMapOfTask().values().stream()
-                .sorted(Comparator.comparing(Task::getStatus))
-                .forEach(System.out::println);
+    public void sortTasksByStatus() {
+        repository.sortTasksByStatusAtRepository();
     }
 
-    public void sortByDeadLine() {
-        repository.getMapOfTask().values().stream()
-                .sorted(Comparator.comparing(Task::getDateDeadLine))
-                .forEach(System.out::println);
+    public void sortTasksByDeadline() {
+        repository.sortTasksByDeadlineAtRepository();
     }
 
-    public boolean listIsEmpty() {
-        return repository.getMapOfTask().isEmpty();
+    public boolean isTaskListEmpty() {
+        return repository.isTaskListEmptyAtRepository();
     }
 
-    public Map<Integer, Task> listTask() {
-        return repository.getMapOfTask();
+    public Map<Integer, Task> getAllTasks() {
+        return repository.getAllTasksAtRepository();
     }
 
-    public boolean idExist(int id) {
-        return repository.getMapOfTask().containsKey(id);
+    public boolean doesTaskExist(int id) {
+        return repository.doesTaskExistAtRepository(id);
     }
 
-    public String nameOfTask(int id) {
-        return repository.getMapOfTask().get(id).getNameOfTask();
+    public String getTaskName(int id) {
+        return repository.getTaskNameAtRepository(id);
     }
 
-    public void newNameOfTask(String newName, int id) {
-       repository.getMapOfTask().get(id).setNameOfTask(newName);
+    public void updateTaskName(String newName, int id) {
+       repository.updateTaskNameAtRepository(newName, id);
     }
 
-    public String descriptionOfTask (int id) {
-        return repository.getMapOfTask().get(id).getDescriptionOfTask();
+    public String getTaskDescription(int id) {
+        return repository.getTaskDescriptionAtRepository(id);
     }
 
-    public void newDescriptionOfTask(String newDescription, int id) {
-        repository.getMapOfTask().get(id).setDescriptionOfTask(newDescription);
+    public void updateTaskDescription(String newDescription, int id) {
+        repository.updateTaskDescriptionAtRepository(newDescription, id);
     }
 
-    public LocalDate dateOfDeadLineTask (int id) {
-        return repository.getMapOfTask().get(id).getDateDeadLine();
+    public LocalDate getTaskDeadline(int id) {
+        return repository.getTaskDeadlineAtRepository(id);
     }
 
-    public void newDateOfDeadLineTask(LocalDate newDateOfDeadLine, int id) {
-        repository.getMapOfTask().get(id).setDateDeadLine(newDateOfDeadLine);
+    public void updateTaskDeadline(LocalDate newDateOfDeadLine, int id) {
+        repository.updateTaskDeadlineAtRepository(newDateOfDeadLine, id);
     }
 
-    public TaskStatus statusOfTask (int id) {
-        return repository.getMapOfTask().get(id).getStatus();
+    public TaskStatus getTaskStatus(int id) {
+        return repository.getTaskStatusAtRepository(id);
     }
 
-    public void newStatusOfTask(TaskStatus newStatusOfTask, int id) {
-        repository.getMapOfTask().get(id).setStatus(newStatusOfTask);
+    public void updateTaskStatus(TaskStatus newStatusOfTask, int id) {
+        repository.updateTaskStatusAtRepository(newStatusOfTask, id);
     }
 
-    public void deleteTask (int id) {
-        repository.getMapOfTask().remove(id);
+    public void deleteTask(int id) {
+        repository.deleteTaskAtRepository(id);
     }
 
 }

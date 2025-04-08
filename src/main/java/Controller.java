@@ -1,26 +1,12 @@
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Optional;
 import java.util.Scanner;
 
 public class Controller {
-    Scanner scanner = new Scanner(System.in);
-    Service service = new Service();
+    private Scanner scanner = new Scanner(System.in);
+    private Service service = new Service();
 
-    /*
-    Controller - общение с пользователем, вся логика с scanner и sout
-    Service - основная бизнес-логика, фильтрации, сортировки и тп
-    Repository - хранение данных, в нашем случае в коллекции
-
-    Service принимает запрос от Controller, отправляет запрос Repository, получает ответ от Repository, отправляет ответ Contoller
-    Contoller и Repository не общаются напрямую и не используют методы друг друга!
-
-
-    //1 получить корректную строку из сканера
-// Тесты только на сервис
-                    // Задачки по дефолту в репрозиторий добавить
-     */
     public void execute() {
 
         boolean isRunning = true;
@@ -34,32 +20,32 @@ public class Controller {
 
                 case "add" -> {
                     System.out.println("Введите название задачи: ");
-                    String nameOfTask = addNameOfTask(scanner.nextLine());
+                    String nameOfTask = readValidString("Некорректное название, заполните поле.");
 
                     System.out.println("Введите описание задачи: ");
-                    String descriptionOfTask = addDescriptionOfTask(scanner.nextLine());
+                    String descriptionOfTask = readValidString("Некорректное описание, заполните поле.");
 
                     System.out.println("Введите дату дедлайна в формате dd.mm.yyyy");
-                    LocalDate dateOfDeadLine = addDateOfDeadLine(scanner.nextLine());
+                    LocalDate dateOfDeadLine = readValidDeadline(scanner.nextLine());
 
                     service.addTask(nameOfTask, descriptionOfTask, dateOfDeadLine);
                     System.out.println("Задача успешно добавлена!");
                 }
 
                 case "list" -> {
-                    if (service.listIsEmpty()) {
+                    if (service.isTaskListEmpty()) {
                         System.out.println("Задач пока нет, создайте новую!");
                     } else {
                         System.out.printf("%-5s | %-20s | %-30s | %-12s | %-10s%n",
                                 "ID", "Название", "Описание", "Дата", "Статус");
                         System.out.println("=".repeat(85));
-                        service.listTask().forEach((id, task) -> System.out.printf("%-5s | %-20s | %-30s | %-12s | %-10s%n",
+                        service.getAllTasks().forEach((id, task) -> System.out.printf("%-5s | %-20s | %-30s | %-12s | %-10s%n",
                                 id, task.getNameOfTask(), task.getDescriptionOfTask(), task.getDateDeadLine(), task.getStatus()));
                     }
                 }
 
                 case "edit" -> {
-                    int id = availabilityCheckID();
+                    int id = readValidTaskIdOrExit();
                     if (id == -1) break;
 
                     System.out.println("Выберите пункт для изменений:");
@@ -86,7 +72,7 @@ public class Controller {
                 }
 
                 case "delete" -> {
-                    int id = availabilityCheckID();
+                    int id = readValidTaskIdOrExit();
                     if (id == -1) break;
                     service.deleteTask(id);
                     System.out.println("Задача с ID " + id + " удалена.");
@@ -100,26 +86,23 @@ public class Controller {
                     System.out.print("Ваш выбор: ");
                     String inputStatus = scanner.nextLine().trim();
 
-                    Optional<TaskStatus> chosenStatus = switch (inputStatus) {
-                        case "1" -> Optional.of(TaskStatus.TODO);
-                        case "2" -> Optional.of(TaskStatus.IN_PROGRESS);
-                        case "3" -> Optional.of(TaskStatus.DONE);
-                        default -> Optional.empty();
-                    };
-
-                    if (chosenStatus.isEmpty()) {
+                    TaskStatus chosenStatus;
+                    try {
+                        int statusId = Integer.parseInt(inputStatus);
+                        chosenStatus = TaskStatus.returnStatusFromId(statusId);
+                    } catch (Exception e) {
                         System.out.println("Некорректный ввод. Фильтрация не выполнена.");
                         break;
-                    } else {
-                        boolean hasTask = service.filterTaskByStatus(chosenStatus.get());
-                        if (!hasTask) {
-                            System.out.println("Нет задач со статусом " + chosenStatus.get());
-                        }
+                    }
+
+                    boolean hasTask = service.filterTasksByStatus(chosenStatus);
+                    if (!hasTask) {
+                        System.out.println("Нет задач со статусом " + chosenStatus);
                     }
                 }
 
                 case "sort" -> {
-                    if (service.listIsEmpty()) {
+                    if (service.isTaskListEmpty()) {
                         System.out.println("Задач пока нет, добавьте хотя бы одну.");
                     } else {
                         System.out.println("Выберите тип сортировки:");
@@ -130,9 +113,9 @@ public class Controller {
                         String input = scanner.nextLine().trim();
 
                         if (input.equals("1")) {
-                            service.sortByDeadLine();
+                            service.sortTasksByDeadline();
                         } else if (input.equals("2")) {
-                            service.sortByStatus();
+                            service.sortTasksByStatus();
                         } else {
                             System.out.println("Некорректный ввод, сортировка не выполнена.");
                         }
@@ -158,27 +141,18 @@ public class Controller {
                         System.out.println("Некорректный ввод. Изучите доступные команды введя \"help\" и повторите ввод: ");
             }
         }
-
-
     }
 
-    public String addNameOfTask(String nameOfTask) {
-        while (nameOfTask.trim().isEmpty()) {
-            System.out.println("Некорректное название, заполните поле.");
-            nameOfTask = scanner.nextLine();
+    public String readValidString(String errorMessage) {
+        String input = scanner.nextLine();
+        while (input.isBlank()) {
+            System.out.println(errorMessage);
+            input = scanner.nextLine();
         }
-        return nameOfTask;
+        return input;
     }
 
-    public String addDescriptionOfTask(String descriptionOfTask) {
-        while (descriptionOfTask.trim().isEmpty()) {
-            System.out.println("Некорректное описание, заполните поле.");
-            descriptionOfTask = scanner.nextLine();
-        }
-        return descriptionOfTask;
-    }
-
-    public LocalDate addDateOfDeadLine(String inputDate) {
+    public LocalDate readValidDeadline(String inputDate) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
         while (true) {
@@ -191,7 +165,7 @@ public class Controller {
         }
     }
 
-    public int availabilityCheckID() {
+    public int readValidTaskIdOrExit() {
         while (true) {
             System.out.println("Введите ID задачи или 0 для выхода:");
             String input = scanner.nextLine().trim();
@@ -200,7 +174,7 @@ public class Controller {
             }
             try {
                 int id = Integer.parseInt(input);
-                if (service.idExist(id)) {
+                if (service.doesTaskExist(id)) {
                     return id;
                 } else {
                     System.out.println("Такой задачи не существует, попробуйте ещё раз.");
@@ -212,60 +186,39 @@ public class Controller {
     }
 
     public void setNewNameOfTask(int id) {
-        System.out.println("Текущее название задачи: " + service.nameOfTask(id) + ". Новое название: ");
-        String newNameOfTask = scanner.nextLine().trim();
-        service.newNameOfTask(addNameOfTask(newNameOfTask), id);
-        System.out.println("Вы изменили название задачи на: " + service.nameOfTask(id));
+        System.out.println("Текущее название задачи: " + service.getTaskName(id) + ". Новое название: ");
+        String name = readValidString("Название не может быть пустым");
+        service.updateTaskName(name, id);
+        System.out.println("Вы изменили название задачи на: " + service.getTaskName(id));
     }
 
     public void setNewDescriptionOfTask(int id) {
-        System.out.println("Текущее описание задачи: " + service.descriptionOfTask(id) + ". Новое описание: ");
-        String newDescriptionOfTask = scanner.nextLine().trim();
-        service.newDescriptionOfTask(addDescriptionOfTask(newDescriptionOfTask), id);
-        System.out.println("Вы изменили описание задачи на: " + service.descriptionOfTask(id));
+        System.out.println("Текущее описание задачи: " + service.getTaskDescription(id) + ". Новое описание: ");
+        String description = readValidString("Описание не может быть пустым");
+        service.updateTaskDescription(description, id);
+        System.out.println("Вы изменили описание задачи на: " + service.getTaskDescription(id));
     }
 
     public void setNewDateOfDeadLineTask(int id) {
-        System.out.println("Текущее дата дэдлайна: " + service.dateOfDeadLineTask(id) + ". Новая дата: ");
+        System.out.println("Текущее дата дэдлайна: " + service.getTaskDeadline(id) + ". Новая дата: ");
         String newDateOfDeadLine = scanner.nextLine().trim();
-        service.newDateOfDeadLineTask(addDateOfDeadLine(newDateOfDeadLine), id);
-        System.out.println("Вы изменили дату на: " + service.dateOfDeadLineTask(id));
+        service.updateTaskDeadline(readValidDeadline(newDateOfDeadLine), id);
+        System.out.println("Вы изменили дату на: " + service.getTaskDeadline(id));
     }
 
     public void setNewStatusTask(int id) {
-        System.out.println("Текущий статус: " + service.statusOfTask(id) + ". Выберите новый статус: ");
+        System.out.println("Текущий статус: " + service.getTaskStatus(id) + ". Выберите новый статус: ");
         System.out.println("1 - TODO");
         System.out.println("2 - IN_PROGRESS");
         System.out.println("3 - DONE");
 
-        TaskStatus newStatus = null;
-
-        while (newStatus == null) {
-            int choice = Integer.parseInt(scanner.nextLine().trim());
-
-            try {
-                switch (choice) {
-                    case 1 -> {
-                        newStatus = TaskStatus.TODO;
-                        System.out.println("Статус изменён на TODO");
-                    }
-                    case 2 -> {
-                        newStatus = TaskStatus.IN_PROGRESS;
-                        System.out.println("Статус изменён на IN_PROGRESS");
-                    }
-                    case 3 -> {
-                        newStatus = TaskStatus.DONE;
-                        System.out.println("Статус изменён на DONE");
-                    }
-                    default -> System.out.println("Некорректный ввод. Статус не изменён.");
-                }
-
-            } catch (NumberFormatException e) {
-                System.out.println("Некорректный ввод. Статус не изменён.");
-            }
-            if (newStatus != null) {
-                service.newStatusOfTask(newStatus, id);
-            }
+                try {
+            int statusId = Integer.parseInt(scanner.nextLine().trim());
+            TaskStatus newStatus = TaskStatus.returnStatusFromId(statusId);
+            service.updateTaskStatus(newStatus, id);
+            System.out.println("Статус изменён на " + newStatus);
+        } catch (NumberFormatException e) {
+            System.out.println("Некорректный ввод. Статус не изменён.");
         }
     }
 
