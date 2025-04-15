@@ -1,4 +1,5 @@
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 public class Service {
@@ -28,16 +29,16 @@ public class Service {
                 repository.addTaskInMemory(nameOfTask, descriptionOfTask, dateOfDeadLine);
     }
 
-    public boolean filterTasksByStatus(TaskStatus status) {
+    public List<Map.Entry<Integer,Task>> filterTasksByStatus(TaskStatus status) {
         return repository.filterTasksByStatusAtRepository(status);
     }
 
-    public void sortTasksByStatus() {
-        repository.sortTasksByStatusAtRepository();
+    public List<Map.Entry<Integer,Task>> sortTasksByStatus() {
+        return repository.sortTasksByStatusAtRepository();
     }
 
-    public void sortTasksByDeadline() {
-        repository.sortTasksByDeadlineAtRepository();
+    public List<Map.Entry<Integer,Task>> sortTasksByDeadline() {
+        return repository.sortTasksByDeadlineAtRepository();
     }
 
     public boolean isTaskListEmpty() {

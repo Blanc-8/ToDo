@@ -1,6 +1,8 @@
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Controller {
@@ -84,20 +86,20 @@ public class Controller {
                     System.out.println("2 - IN_PROGRESS");
                     System.out.println("3 - DONE");
                     System.out.print("Ваш выбор: ");
-                    String inputStatus = scanner.nextLine().trim();
 
-                    TaskStatus chosenStatus;
+                    String inputStatus = scanner.nextLine().trim();
                     try {
                         int statusId = Integer.parseInt(inputStatus);
-                        chosenStatus = TaskStatus.returnStatusFromId(statusId);
+                        TaskStatus chosenStatus = TaskStatus.returnStatusFromId(statusId);
+
+                        List<Map.Entry<Integer, Task>> filteredTasks = service.filterTasksByStatus(chosenStatus);
+                        if (filteredTasks.isEmpty()) {
+                            System.out.println("Нет задач со статусом " + chosenStatus);
+                        } else {
+                            printFormattedTaskList(filteredTasks);
+                        }
                     } catch (Exception e) {
                         System.out.println("Некорректный ввод. Фильтрация не выполнена.");
-                        break;
-                    }
-
-                    boolean hasTask = service.filterTasksByStatus(chosenStatus);
-                    if (!hasTask) {
-                        System.out.println("Нет задач со статусом " + chosenStatus);
                     }
                 }
 
@@ -112,10 +114,13 @@ public class Controller {
 
                         String input = scanner.nextLine().trim();
 
+                        List<Map.Entry<Integer, Task>> sortedTasks;
                         if (input.equals("1")) {
-                            service.sortTasksByDeadline();
+                            sortedTasks = service.sortTasksByDeadline();
+                            printFormattedTaskList(sortedTasks);
                         } else if (input.equals("2")) {
-                            service.sortTasksByStatus();
+                            sortedTasks = service.sortTasksByStatus();
+                            printFormattedTaskList(sortedTasks);
                         } else {
                             System.out.println("Некорректный ввод, сортировка не выполнена.");
                         }
@@ -212,7 +217,7 @@ public class Controller {
         System.out.println("2 - IN_PROGRESS");
         System.out.println("3 - DONE");
 
-                try {
+        try {
             int statusId = Integer.parseInt(scanner.nextLine().trim());
             TaskStatus newStatus = TaskStatus.returnStatusFromId(statusId);
             service.updateTaskStatus(newStatus, id);
@@ -222,5 +227,18 @@ public class Controller {
         }
     }
 
+    private void printFormattedTaskList(List<Map.Entry<Integer, Task>> tasks) {
+        System.out.printf("%-5s | %-20s | %-30s | %-12s | %-10s%n",
+                "ID", "Название", "Описание", "Дата", "Статус");
+        System.out.println("=".repeat(85));
 
+        for (Map.Entry<Integer, Task> entry : tasks) {
+            Integer id = entry.getKey();
+            Task task = entry.getValue();
+
+            System.out.printf("%-5s | %-20s | %-30s | %-12s | %-10s%n",
+                    id, task.getNameOfTask(), task.getDescriptionOfTask(), task.getDateDeadLine(), task.getStatus());
+        }
+
+    }
 }
